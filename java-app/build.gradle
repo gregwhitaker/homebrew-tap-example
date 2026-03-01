@@ -1,0 +1,43 @@
+plugins {
+  id 'java'
+  id 'application'
+}
+
+group = 'com.example'
+version = findProperty('appVersion') ?: '1.0.0'
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(17)
+  }
+}
+
+application {
+  mainClass = 'com.example.HelloBrew'
+}
+
+jar {
+  archiveBaseName = 'hello-brew'
+  archiveVersion = project.version
+  manifest {
+    attributes(
+      'Main-Class': application.mainClass.get()
+    )
+  }
+}
+
+tasks.register('releaseJar', Copy) {
+  dependsOn tasks.jar
+  from(tasks.jar)
+  into(layout.projectDirectory.dir('dist'))
+}
+
+tasks.register('printSha256') {
+  dependsOn tasks.releaseJar
+  doLast {
+    def jarFile = layout.projectDirectory.file("dist/hello-brew-${project.version}.jar").asFile
+    exec {
+      commandLine 'shasum', '-a', '256', jarFile.absolutePath
+    }
+  }
+}
