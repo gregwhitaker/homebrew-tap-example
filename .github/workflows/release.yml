@@ -1,9 +1,11 @@
 name: Release JAR
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (without v prefix), e.g. 1.0.1"
+        required: true
 
 permissions:
   contents: write
@@ -11,10 +13,14 @@ permissions:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    env:
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -22,17 +28,59 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Build release JAR
+      - name: Validate version input
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z]+)*$ ]]; then
+            echo "Invalid version: $VERSION"
+            exit 1
+          fi
+
+      - name: Build release assets
         working-directory: java-app
         run: |
           chmod +x ./gradlew
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ github.event.inputs.version }}"
           ./gradlew clean releaseJar -PappVersion="${VERSION}"
           shasum -a 256 "dist/hello-brew-${VERSION}.jar" > "dist/hello-brew-${VERSION}.jar.sha256"
+
+      - name: Update formula url and sha256
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          TAG="v${VERSION}"
+          SHA="$(cut -d' ' -f1 "java-app/dist/hello-brew-${VERSION}.jar.sha256")"
+          URL="https://github.com/gregwhitaker/homebrew-tap-example/releases/download/${TAG}/hello-brew-${VERSION}.jar"
+
+          sed -i "s|^  url \".*\"|  url \"${URL}\"|" Formula/hello-brew.rb
+          sed -i "s|^  sha256 \".*\"|  sha256 \"${SHA}\"|" Formula/hello-brew.rb
+
+      - name: Commit formula update
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/hello-brew.rb
+          git commit -m "Release v${VERSION}" || echo "No changes to commit"
+
+      - name: Create and push tag
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          TAG="v${VERSION}"
+
+          git fetch --tags
+          if git rev-parse "${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists"
+            exit 1
+          fi
+
+          git push origin HEAD:"${DEFAULT_BRANCH}"
+          git tag "${TAG}"
+          git push origin "${TAG}"
 
       - name: Create GitHub release and upload assets
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ github.event.inputs.version }}
           files: |
-            java-app/dist/hello-brew-*.jar
-            java-app/dist/hello-brew-*.jar.sha256
+            java-app/dist/hello-brew-${{ github.event.inputs.version }}.jar
+            java-app/dist/hello-brew-${{ github.event.inputs.version }}.jar.sha256

@@ -8,7 +8,7 @@ class HelloBrew < Formula
   depends_on "openjdk"
 
   def install
-    libexec.install "hello-brew-1.0.0.jar" => "hello-brew.jar"
+    libexec.install "hello-brew-#{version}.jar" => "hello-brew.jar"
 
     (bin/"hello-brew").write <<~EOS
       #!/usr/bin/env bash
