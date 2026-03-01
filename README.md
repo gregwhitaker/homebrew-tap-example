@@ -8,46 +8,20 @@ Example tap that distributes a prebuilt executable Java JAR.
 - `java-app/src/main/java/com/example/HelloBrew.java`: Sample Java CLI app.
 - `java-app/build.gradle`: Gradle build that packages the executable JAR.
 
-## Build the executable JAR (Gradle Wrapper)
+## Release process (GitHub Actions)
 
-```bash
-cd java-app
-./gradlew clean releaseJar -PappVersion=1.0.0
-```
+This repository uses `.github/workflows/release.yml` as the release workflow.
 
-This creates:
-
-- `java-app/dist/hello-brew-1.0.0.jar`
-
-Print the SHA256 for the formula:
-
-```bash
-cd java-app
-./gradlew printSha256 -PappVersion=1.0.0
-```
-
-## Publish and wire up Homebrew
-
-1. Open GitHub Actions and run the `Release JAR` workflow manually.
-2. Provide a version without `v` (example `1.0.0`).
-3. The workflow will:
-   - Build `hello-brew-<version>.jar` and `hello-brew-<version>.jar.sha256`.
-   - Update `Formula/hello-brew.rb` URL and SHA256.
-   - Commit the formula update to the repository default branch.
+1. Push your latest changes to the default branch.
+2. In GitHub, go to `Actions` -> `Release JAR` -> `Run workflow`.
+3. Enter a semantic version without `v` (example `1.0.0`) and run it.
+4. The workflow will:
+   - Build `java-app/dist/hello-brew-<version>.jar`.
+   - Generate `java-app/dist/hello-brew-<version>.jar.sha256`.
+   - Update `Formula/hello-brew.rb` `url` and `sha256`.
+   - Commit the formula update to the default branch.
    - Create and push tag `v<version>`.
    - Create/update the GitHub release and upload both assets.
-
-## Automated releases with GitHub Actions
-
-This repository includes a release workflow at `.github/workflows/release.yml`.
-
-When you run it with version `1.0.0`, GitHub Actions will:
-
-1. Build `java-app/dist/hello-brew-1.0.0.jar` using `./gradlew`.
-2. Generate `java-app/dist/hello-brew-1.0.0.jar.sha256`.
-3. Update and commit `Formula/hello-brew.rb` with the matching URL and SHA.
-4. Create tag `v1.0.0`.
-5. Create/update the GitHub release and upload both files as release assets.
 
 ## Install from this tap
 
