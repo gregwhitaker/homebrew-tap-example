@@ -2,7 +2,7 @@ class HelloBrew < Formula
   desc "Example Java CLI distributed as an executable JAR"
   homepage "https://github.com/gregwhitaker/homebrew-tap-example"
   url "https://github.com/gregwhitaker/homebrew-tap-example/releases/download/v1.0.0/hello-brew-1.0.0.jar"
-  sha256 "0659fbb9ecf39556210476808b910f96e96559cabf1b7500153a69719b524fc5"
+  sha256 "ebb3e032dcca824e5dcf655a0199926a86405e7191897b0a176028787c046b83"
   license "MIT"
 
   depends_on "openjdk"
