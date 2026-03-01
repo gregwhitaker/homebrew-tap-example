@@ -28,12 +28,24 @@ cd java-app
 
 ## Publish and wire up Homebrew
 
-1. Create a GitHub release tag (example `v1.0.0`).
-2. Upload `java-app/dist/hello-brew-1.0.0.jar` as a release asset.
+1. Push a Git tag (example `v1.0.0`).
+2. GitHub Actions builds and uploads release assets:
+   - `hello-brew-1.0.0.jar`
+   - `hello-brew-1.0.0.jar.sha256`
 3. In `Formula/hello-brew.rb`, set:
    - `url` to the release asset URL.
-   - `sha256` to the value output from `./gradlew printSha256 -PappVersion=<version>`.
-4. Commit and push the tap.
+   - `sha256` to the value in `hello-brew-<version>.jar.sha256`.
+4. Commit and push the formula update.
+
+## Automated releases with GitHub Actions
+
+This repository includes a release workflow at `.github/workflows/release.yml`.
+
+When you push a tag like `v1.0.0`, GitHub Actions will:
+
+1. Build `java-app/dist/hello-brew-1.0.0.jar` using `./gradlew`.
+2. Generate `java-app/dist/hello-brew-1.0.0.jar.sha256`.
+3. Create/update the GitHub release for that tag and upload both files as release assets.
 
 ## Install from this tap
 
