@@ -58,12 +58,6 @@ hello-brew
 hello-brew "Homebrew user"
 ```
 
-## Why this pattern works
-
-- The JAR is treated as the distributed artifact.
-- Homebrew verifies integrity with `sha256`.
-- The wrapper script ensures `java -jar` runs with the tap's `openjdk` dependency.
-
 ## License
 MIT License
 
