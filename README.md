@@ -38,7 +38,7 @@ cd java-app
 ## Install from this tap
 
 ```bash
-brew tap gwhitake/tap https://github.com/gwhitake/homebrew-tap-example
+brew tap gregwhitaker/tap https://github.com/gregwhitaker/homebrew-tap-example
 brew install hello-brew
 hello-brew
 hello-brew "Homebrew user"
